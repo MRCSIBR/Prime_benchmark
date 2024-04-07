@@ -15,5 +15,5 @@ Example Compilation Command:
 gcc -O2 -Wall -Wextra -lm prime_counter.c -o prime_counter
 ```
 
-TODO: 1. add visual feedback
-      2. add user input
+TODO: * 1. add visual feedback
+      * 2. add user input
