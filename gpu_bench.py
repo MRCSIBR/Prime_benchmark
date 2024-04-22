@@ -1,39 +1,43 @@
-import taichi as ti
 import time
+import taichi as ti
+ti.init(arch=ti.gpu)
+NUM_OPERATIONS = 10000000
 
 @ti.kernel
-def sieve_of_eratosthenes(primes: ti.template(), max_prime: int) -> None:
-    ti.loop_config(block_dim=256)
-    for i in range(2, int(max_prime ** 0.5) + 1):
-        if not primes[i]:
-            for j in range(i * i, max_prime + 1, i):
-                primes[j] = True
+def integer_multiplication_taichi(result: ti.types.ndarray()):
+    for i in range(NUM_OPERATIONS):
+        result[i] = (i + 1) * (i + 2)
+
+def integer_multiplication_benchmark_taichi():
+    result = ti.ndarray(shape=NUM_OPERATIONS, dtype=ti.int32)
+    start_time = time.perf_counter()
+    integer_multiplication_taichi(result)
+    end_time = time.perf_counter()
+    execution_time = end_time - start_time
+    operations_per_second = NUM_OPERATIONS / execution_time
+    return operations_per_second
 
 @ti.kernel
-def count_primes(primes: ti.template(), max_prime: int) -> int:
-    ti.loop_config(block_dim=256)
-    count = 0
-    for i in range(2, max_prime + 1):
-        if not primes[i]:
-            count += 1
-    return count
+def float_multiplication_taichi(result: ti.types.ndarray()):
+    for i in range(NUM_OPERATIONS):
+        result[i] = (i + 1.0) * (i + 2.0)
 
-def main():
-    max_prime = 1000000
-    primes = ti.field(dtype=ti.i32, shape=max_prime + 1)
-    primes.fill(0)  # Initialize all elements to 0 (indicating prime)
-
-    start_time = time.time()
-
-    prime_count = 0
-    while time.time() - start_time < 20.0:
-        sieve_of_eratosthenes(primes, max_prime)
-        prime_count = count_primes(primes, max_prime)
-
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-
-    print(f"Generated {prime_count} primes in {elapsed_time:.2f} seconds")
+def float_multiplication_benchmark_taichi():
+    result = ti.ndarray(shape=NUM_OPERATIONS, dtype=ti.float32)
+    start_time = time.perf_counter()
+    float_multiplication_taichi(result)
+    end_time = time.perf_counter()
+    execution_time = end_time - start_time
+    operations_per_second = NUM_OPERATIONS / execution_time
+    return operations_per_second
 
 if __name__ == "__main__":
-    main()
+    int_ops_per_second = integer_multiplication_benchmark_taichi()
+    print(f"Integer operations per second (Taichi): {int_ops_per_second:.2f}")
+
+    float_ops_per_second = float_multiplication_benchmark_taichi()
+    print(f"Floating-point operations per second (Taichi): {float_ops_per_second:.2f}")
+
+# Integer operations per second (Taichi): 288237492.01
+# Floating-point operations per second (Taichi): 637636480.47
+#
