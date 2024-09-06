@@ -19,6 +19,37 @@ void sieveOfEratosthenes(bool *primes, uint64_t max) {
     }
 }
 
+// Miller-Rabin primality test function
+bool millerRabin(uint64_t n, int k = 5) {
+    if (n == 2 || n == 3) return true;
+    if (n <= 1 || n % 2 == 0) return false;
+
+    uint64_t s = 0;
+    uint64_t r = n - 1;
+    while ((r & 1) == 0) {
+        s++;
+        r >>= 1;
+    }
+
+    for (int i = 0; i < k; i++) {
+        uint64_t a = 2 + rand() % (n - 3);
+        uint64_t x = pow(a, r);
+        if (x != 1 && x != n - 1) {
+            bool j = false;
+            for (int j = 1; j < s; j++) {
+                x = pow(x, 2);
+                if (x == 1) return false;
+                if (x == n - 1) {
+                    j = true;
+                    break;
+                }
+            }
+            if (!j) return false;
+        }
+    }
+    return true;
+}
+
 int main() {
     uint64_t maxPrime = 1000000;
     bool* primes = (bool*)malloc((maxPrime + 1) * sizeof(bool));
@@ -47,6 +78,13 @@ int main() {
                 primeCount++;
             }
         }
+
+        // Test some numbers using the Miller-Rabin primality test
+        for (uint64_t i = 2; i <= maxPrime; i += 1000) {
+            if (millerRabin(i)) {
+                printf("%llu is probably prime\n", i);
+            }
+        }
     }
 
     // Measure end time
@@ -62,3 +100,4 @@ int main() {
 
     return 0;
 }
+
